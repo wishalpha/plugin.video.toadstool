@@ -1,22 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.toadstool"
-version="0.0.1"
-name="ToadStool"
-provider-name="wishalpha">
+<addon id="plugin.video.lunaTV" version="1.0.1" name="LunaTV (Leia)" provider-name="alpha">
 <requires>
-  <import addon="xbmc.python" version="3.0.0"/>
-  <import addon="script.module.beautifulsoup4" version="4.3.2"/>
-  <import addon="script.module.requests" version="2.9.1"/>
+<import addon="xbmc.python" version="2.1.0" />
 </requires>
 <extension point="xbmc.python.pluginsource" library="addon.py">
-  <provides>video</provides>
+<provides>video</provides>
 </extension>
 <extension point="xbmc.addon.metadata">
-  <summary lang="en_GB">Kodi Video Streaming Plugin</summary>
-  <description lang="en_GB">Kodi video streaming for various online resource site</description>
-  <disclaimer lang="en_GB">Content are scraped from online</disclaimer>
-  <license>GPL-3.0-only	</license>
-  <platform>all</platform>
+<summary>Search DYTT-like API and play episodes (Kodi 18)</summary>
+<description>Search API, login to store cookies, list results, episodes, and play streams.</description>
+<platform>all</platform>
   <assets>
     <icon>icon.png</icon>
     <fanart>fanart.jpg</fanart>
