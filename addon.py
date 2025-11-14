@@ -28,7 +28,7 @@ API_LOGIN = '/api/login'
 
 
 # Cookie file path (Netscape format)
-COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://profile/cookies.txt')
+COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://sotrage/cookies.txt')
 HTTP_TIMEOUT = 20
 
 
@@ -43,10 +43,10 @@ def log(msg, level=xbmc.LOGNOTICE):
 def ensure_cookie_dir(path):
     d = os.path.dirname(path)
     if not os.path.exists(d):
-    try:
-        os.makedirs(d)
-    except Exception:
-        pass
+        try:
+            os.makedirs(d)
+        except Exception:
+            pass
 
 
 
@@ -56,8 +56,8 @@ def load_cookie_jar(path):
     jar = cookielib.MozillaCookieJar(path)
     try:
         if os.path.exists(path):
-        jar.load(ignore_discard=True, ignore_expires=True)
-        log('Loaded cookies from %s' % path)
+            jar.load(ignore_discard=True, ignore_expires=True)
+            log('Loaded cookies from %s' % path)
     except Exception as e:
         log('Failed loading cookies: %s' % str(e), xbmc.LOGWARNING)
     return jar
@@ -100,7 +100,7 @@ def http_get(url):
         return text, resp.info()
     except Exception as e:
         log('HTTP GET failed: %s' % str(e), xbmc.LOGERROR)
-    raise
+        raise
 
 def http_post_json(url, payload):
     opener, jar = build_opener()
@@ -166,7 +166,7 @@ def do_login():
         try:
             j = json.loads(text)
             if isinstance(j, dict) and j.get('ok') is not None:
-            xbmcgui.Dialog().notification('Login', 'Server response: %s' % str(j), xbmcgui.NOTIFICATION_INFO)
+                xbmcgui.Dialog().notification('Login', 'Server response: %s' % str(j), xbmcgui.NOTIFICATION_INFO)
         except Exception:
             pass
     except Exception as e:
@@ -175,8 +175,8 @@ def do_login():
 def clear_cookies():
     try:
         if os.path.exists(COOKIE_PATH):
-        os.remove(COOKIE_PATH)
-        xbmcgui.Dialog().notification('Cookies', 'Cookies cleared', xbmcgui.NOTIFICATION_INFO)
+            os.remove(COOKIE_PATH)
+            xbmcgui.Dialog().notification('Cookies', 'Cookies cleared', xbmcgui.NOTIFICATION_INFO)
     except Exception as e:
         xbmcgui.Dialog().notification('Error', str(e), xbmcgui.NOTIFICATION_ERROR)
 
@@ -202,8 +202,7 @@ def do_search(query=None):
     try:
         data = json.loads(text)
     except Exception as e:
-        log('JSON parse failed: %s
-        %s' % (e, text), xbmc.LOGERROR)
+        log('JSON parse failed: %s %s' % (e, text), xbmc.LOGERROR)
         xbmcgui.Dialog().notification('Invalid response', 'Cannot parse JSON', xbmcgui.NOTIFICATION_ERROR)
         return
     
