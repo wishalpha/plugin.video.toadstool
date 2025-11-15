@@ -190,8 +190,8 @@ def do_search():
     query = kb.getText()
     
     
-    q = urllib.quote(query.encode('utf-8'))
-    url = BASE_URL.rstrip('/') + API_SEARCH + '?q=' + q
+    q = urllib.urlencode({'q': query.encode('utf-8')})
+    url = BASE_URL.rstrip('/') + API_SEARCH + '?' + q
     try:
         text, headers = http_get(url)
     except Exception as e:
@@ -217,7 +217,8 @@ def do_search():
         label = '%s (%s)' % (title, year) if year else title
         poster = item.get('poster')
         plot = item.get('desc') or ''
-        info = {'title': title, 'plot': plot, 'genre': item.get('class') or '', 'year': year}
+        source = item.get('source_name') or ''
+        info = {'title': title+'('+source+')' , 'plot': plot, 'genre': item.get('class') or '', 'year': year}
         params = {'action': 'list_episodes', 'item_json': urllib.quote(json.dumps(item))}
         art = {}
         if poster:
