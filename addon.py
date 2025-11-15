@@ -1,41 +1,77 @@
-# -*- coding: utf-8 -*-
-# default.py for Kodi 18 (Python 2)
+# coding: utf-8
+import sys,os,json,traceback,urllib,cookielib, urllib2
 
+try:
+    from urllib import urlencode
+    from urllib import quote,unquote
+    from urlparse import parse_qsl
+except ImportError:
+    from urllib.parse import urlencode,quote,parse_qsl,unquote
 
-import sys
-import os
-import json
-import urllib
-import urllib2
-import urlparse
-import cookielib
-import traceback
-
-
-import xbmc
 import xbmcgui
 import xbmcplugin
+import xbmc
+import xbmcvfs
 import xbmcaddon
 
+# Get the plugin url in plugin:// notation.
+_url = sys.argv[0]
+# Get the plugin handle as an integer number.
+_handle = int(sys.argv[1])
 
-# --------------------- configuration ---------------------
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo('id')
-HANDLE = int(sys.argv[1])
+
 BASE_URL = ADDON.getSetting('base_url') or 'http://120.0.0.1:3300'
 API_SEARCH = '/api/search'
 API_LOGIN = '/api/login'
 
 
+
 # Cookie file path (Netscape format)
-COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://sotrage/cookies.txt')
+COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://storage/cookies.txt')
 HTTP_TIMEOUT = 20
+
+
+CATEGORIES = ["Movies", "TVshows","Comics","Entertainment","Search" ]
+engines =['wujinvod','pianku','feifan','taopian','shandian','liangzi','tiankong','guangsu','wolong']
+
+def get_user_input():  
+    kb = xbmc.Keyboard('', 'Please enter the video title')
+    kb.doModal() # Onscreen keyboard appears
+    if not kb.isConfirmed():
+        return
+    query = kb.getText() # User input
+    return query
+
+def get_ip():  
+    file_path='server_list'
+    server_list = ['127.0.0.1','192.168.1.253']
+    #with open(file_path, 'r') as file:
+    #    for line in file:
+    #        server_list.append(line.strip())
+    ip_index= xbmcgui.Dialog().contextmenu(list=['new']+server_list)
+    if ip_index == 0:
+        kb = xbmc.Keyboard('192.168.1.1', 'Please enter server ip')
+        kb.doModal() # Onscreen keyboard appears
+        if not kb.isConfirmed():
+            return '192.168.1.253'
+        query = kb.getText() # User input
+    #    with open(file_path, 'a') as file:
+    #        file.write(query+'\n')
+        return query
+    return server_list[ip_index-1]
+def to_text (url_string):
+    return unquote(url_string)
+def get_url(**kwargs):
+    return '{0}?{1}'.format(_url, urlencode(kwargs))
+def get_home():
+    return CATEGORIES
 
 
 # --------------------- logging ---------------------
 def log(msg, level=xbmc.LOGNOTICE):
     xbmc.log('[%s] %s' % (ADDON_ID, msg), level)
-
 
 # --------------------- cookie helpers ---------------------
 
@@ -61,8 +97,6 @@ def load_cookie_jar(path):
     except Exception as e:
         log('Failed loading cookies: %s' % str(e), xbmc.LOGWARNING)
     return jar
-
-
 
 
 def save_cookie_jar(jar, path):
@@ -113,14 +147,12 @@ def http_post_json(url, payload):
             text = text.decode('utf-8')
         except Exception:
             text = text.decode('latin1')
-            # save cookie jar
-            save_cookie_jar(jar, COOKIE_PATH)
+        # save cookie jar
+        save_cookie_jar(jar, COOKIE_PATH)
         return text, resp.info()
     except Exception as e:
         log('HTTP POST failed: %s' % str(e), xbmc.LOGERROR)
         raise
-
-# --------------------- UI helpers ---------------------
 
 
 def add_dir(params, list_label, info=None, art=None, is_folder=True):
@@ -133,55 +165,11 @@ def add_dir(params, list_label, info=None, art=None, is_folder=True):
             li.setArt(art)
         except Exception:
             pass
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)
+    xbmcplugin.addDirectoryItem(_handle, url, li, isFolder=is_folder)
 
 
-# --------------------- plugin actions ---------------------
+def do_search(query):
 
-
-def show_root():
-    add_dir({'action': 'search'}, 'Search')
-    add_dir({'action': 'login'}, 'Login (save cookies)')
-    add_dir({'action': 'clear_cookies'}, 'Clear cookies')
-    xbmcplugin.endOfDirectory(HANDLE)
-
-def do_login():
-    # Ask username/password via keyboard dialogs
-    kb = xbmcgui.Dialog()
-    username = xbmcgui.Dialog().input('Username', type=xbmcgui.INPUT_ALPHANUM)
-    if username is None:
-        return
-    password = xbmcgui.Dialog().input('Password', type=xbmcgui.INPUT_PASSWORD)
-    if password is None:
-        return
-    
-    
-    payload = {'username': username, 'password': password}
-    url = BASE_URL.rstrip('/') + API_LOGIN
-    try:
-        text, info = http_post_json(url, payload)
-        # If response includes Set-Cookie, cookiejar already saved by http_post_json
-        xbmcgui.Dialog().notification('Login', 'Login request sent', xbmcgui.NOTIFICATION_INFO)
-        # show response message if JSON
-        try:
-            j = json.loads(text)
-            if isinstance(j, dict) and j.get('ok') is not None:
-                xbmcgui.Dialog().notification('Login', 'Server response: %s' % str(j), xbmcgui.NOTIFICATION_INFO)
-        except Exception:
-            pass
-    except Exception as e:
-        xbmcgui.Dialog().notification('Login failed', str(e), xbmcgui.NOTIFICATION_ERROR)
-
-def clear_cookies():
-    try:
-        if os.path.exists(COOKIE_PATH):
-            os.remove(COOKIE_PATH)
-            xbmcgui.Dialog().notification('Cookies', 'Cookies cleared', xbmcgui.NOTIFICATION_INFO)
-    except Exception as e:
-        xbmcgui.Dialog().notification('Error', str(e), xbmcgui.NOTIFICATION_ERROR)
-
-
-def do_search(query=None):
     if not query:
         kb = xbmc.Keyboard('', 'Search videos')
         kb.doModal()
@@ -225,7 +213,44 @@ def do_search(query=None):
         add_dir(params, label, info=info, art=art, is_folder=True)
     
     
-    xbmcplugin.endOfDirectory(HANDLE)
+    xbmcplugin.endOfDirectory(_handle)
+
+def home_list():
+    add_dir({'action': 'search'}, 'Search')
+    add_dir({'action': 'login'}, 'Login (save cookies)')
+    add_dir({'action': 'logout'}, 'Clear cookies')
+    xbmcplugin.endOfDirectory(_handle)
+
+def do_login():
+    # Ask username/password via keyboard dialogs
+    kb = xbmcgui.Dialog()
+    username = xbmcgui.Dialog().input('Username', type=xbmcgui.INPUT_ALPHANUM)
+    if username is None:
+        return
+    password = xbmcgui.Dialog().input('Password', type=xbmcgui.INPUT_PASSWORD)
+    if password is None:
+        return
+    
+    
+    payload = {'username': username, 'password': password}
+    url = BASE_URL.rstrip('/') + API_LOGIN
+    try:
+        text, info = http_post_json(url, payload)
+        # If response includes Set-Cookie, cookiejar already saved by http_post_json
+        xbmcgui.Dialog().notification('Login', 'Login request sent', xbmcgui.NOTIFICATION_INFO)
+        # show response message if JSON
+        try:
+            j = json.loads(text)
+            if isinstance(j, dict) and j.get('ok') is not None:
+                xbmcgui.Dialog().notification('Login', 'Server response: %s' % str(j), xbmcgui.NOTIFICATION_INFO)
+        except Exception:
+            pass
+    except Exception as e:
+        xbmcgui.Dialog().notification('Login failed', str(e), xbmcgui.NOTIFICATION_ERROR)
+
+
+
+
 
 def list_episodes(item_json):
     try:
@@ -259,63 +284,68 @@ def list_episodes(item_json):
             except Exception:
                 pass
         u = sys.argv[0] + '?' + urllib.urlencode(params)
-        xbmcplugin.addDirectoryItem(HANDLE, u, li, isFolder=False)
+        xbmcplugin.addDirectoryItem(_handle, u, li, isFolder=False)
     
     
-    xbmcplugin.endOfDirectory(HANDLE)
-def play_stream(url):
+    xbmcplugin.endOfDirectory(_handle)
+
+def clear_cookies():
     try:
-        li = xbmcgui.ListItem(path=url)
-        xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        if os.path.exists(COOKIE_PATH):
+            os.remove(COOKIE_PATH)
+            xbmcgui.Dialog().notification('Cookies', 'Cookies cleared', xbmcgui.NOTIFICATION_INFO)
+    except Exception as e:
+        xbmcgui.Dialog().notification('Error', str(e), xbmcgui.NOTIFICATION_ERROR)
+
+
+def play_video(path):
+    try:
+        play_item = xbmcgui.ListItem(path=path)
+        xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
     except Exception as e:
         log('Play failed: %s' % str(e), xbmc.LOGERROR)
         xbmcgui.Dialog().notification('Play failed', str(e), xbmcgui.NOTIFICATION_ERROR)
+    #video_url = path.split('@')[-1].split('dav/')
+    #url = 'http://'+video_url[0]+video_url[1] 
+    #xbmc.log('playing :'+to_text(url),xbmc.LOGERROR) 
+    #xbmc.Player().play(path)
 
-# --------------------- router ---------------------
 
-
-def router():
-    # parse args
-    params = {}
-    if len(sys.argv) > 2 and sys.argv[2]:
-        params = dict(urlparse.parse_qsl(sys.argv[2][1:]))
-    action = params.get('action')
+def router(paramstring):
+    params = dict(parse_qsl(paramstring))
     
-    
-    try:
-        if action is None:
-            show_root()
-        elif action == 'login':
+    # Check the parameters passed to the plugin
+    if params:
+        if params['action'] == 'search':
+            # Display the list of videos in a provided category.
+            do_search()
+        elif params['action'] == 'login':
+            # Display the list of videos in a provided category.
             do_login()
-            show_root()
-        elif action == 'clear_cookies':
+            home_list()
+        elif params['action'] == 'logout':
+            # Display the list of videos in a provided category.
             clear_cookies()
-            show_root()
-        elif action == 'search':
-            # allow passing q as parameter
-            q = params.get('q')
-            do_search(q)
-        elif action == 'list_episodes':
-            item_json = params.get('item_json')
-            if item_json:
-                list_episodes(item_json)
-            else:
-                xbmcgui.Dialog().notification('Missing item', 'No item data provided', xbmcgui.NOTIFICATION_ERROR)
-        elif action == 'play':
-            url = params.get('url')
-            if url:
-                play_stream(url)
-            else:
-                xbmcgui.Dialog().notification('Missing url', 'No URL to play', xbmcgui.NOTIFICATION_ERROR)
+            home_list()  
+            #home_xiaoya('dav://admin:root@{}:5244'.format(get_ip()))
+
+        elif params['action'] == 'list_episodes':
+
+            list_episodes(params["item_json"])
+        elif params['action'] == 'play':
+            # Play a video from a provided URL.
+            #xbmc.log('Playing :'+to_text(params['video']),xbmc.LOGERROR)
+            play_video(params['url'])  
+        elif params['action'] == 'home':
+            # Play a video from a provided URL.
+            home_list()
         else:
-            xbmcgui.Dialog().notification(
-                'Unknown action',
-                action,
-                xbmcgui.NOTIFICATION_ERROR
-            )
-    except Exception as e:
-        xbmcgui.Dialog().notification(
-            'Router Error',
-            str(e),
-            xbmcgui.NOTIFICATION_ERROR
-        )
+            raise ValueError('Invalid paramstring: {0}!'.format(paramstring))
+    else:
+        home_list()
+
+
+if __name__ == '__main__':
+    # Call the router function and pass the plugin call parameters to it.
+    # We use string slicing to trim the leading '?' from the plugin call paramstring
+    router(sys.argv[2][1:])
