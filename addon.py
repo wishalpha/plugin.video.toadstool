@@ -89,10 +89,10 @@ def ensure_cookie_dir(path):
 
 def load_cookie_jar(path):
     ensure_cookie_dir(path)
-    jar = cookielib.MozillaCookieJar(path)
+    jar = cookielib.LWPCookieJar()
     try:
         if os.path.exists(path):
-            jar.load(ignore_discard=True, ignore_expires=True)
+            jar.load(path, ignore_discard=True, ignore_expires=True)
             log('Loaded cookies from %s' % path)
     except Exception as e:
         log('Failed loading cookies: %s' % str(e), xbmc.LOGWARNING)
@@ -115,7 +115,7 @@ def build_opener(cookiejar=None):
         cookiejar = load_cookie_jar(COOKIE_PATH)
         handler = urllib2.HTTPCookieProcessor(cookiejar)
         opener = urllib2.build_opener(handler)
-        opener.addheaders = [('User-agent', 'Kodi-dytt-search/1.0')]
+        #opener.addheaders = [('User-agent', 'Kodi-dytt-search/1.0')]
     return opener, cookiejar
 
 
@@ -123,8 +123,12 @@ def build_opener(cookiejar=None):
 
 def http_get(url):
     opener, jar = build_opener()
+    headers = {
+        'User-Agent': 'Mozilla/5.0'
+    }
+    req = urllib2.Request(url, None, headers)
     try:
-        resp = opener.open(url, timeout=HTTP_TIMEOUT)
+        resp = opener.open(req, timeout=HTTP_TIMEOUT)
         data = resp.read()
         # try decode utf-8, fallback to latin-1
         try:
@@ -138,18 +142,30 @@ def http_get(url):
 
 def http_post_json(url, payload):
     opener, jar = build_opener()
+
     data = json.dumps(payload)
-    req = urllib2.Request(url, data=data, headers={'Content-Type': 'application/json'})
+    headers = {
+        'Content-Type': 'application/json',
+        'Content-Length': str(len(data)),
+        'User-Agent': 'Mozilla/5.0'
+    }
+
+    req = urllib2.Request(url, data, headers)
+
     try:
         resp = opener.open(req, timeout=HTTP_TIMEOUT)
         text = resp.read()
+
+        # decode
         try:
             text = text.decode('utf-8')
-        except Exception:
+        except:
             text = text.decode('latin1')
-        # save cookie jar
+
+        # save cookies
         save_cookie_jar(jar, COOKIE_PATH)
         return text, resp.info()
+
     except Exception as e:
         log('HTTP POST failed: %s' % str(e), xbmc.LOGERROR)
         raise
@@ -223,16 +239,16 @@ def home_list():
 
 def do_login():
     # Ask username/password via keyboard dialogs
-    kb = xbmcgui.Dialog()
-    username = xbmcgui.Dialog().input('Username', type=xbmcgui.INPUT_ALPHANUM)
-    if username is None:
-        return
-    password = xbmcgui.Dialog().input('Password', type=xbmcgui.INPUT_PASSWORD)
-    if password is None:
-        return
+    #kb = xbmcgui.Dialog()
+    #username = xbmcgui.Dialog().input('Username', type=xbmcgui.INPUT_ALPHANUM)
+    #if username is None:
+    #    return
+    #password = xbmcgui.Dialog().input('Password', type=xbmcgui.INPUT_PASSWORD)
+    #if password is None:
+    #   return
     
     
-    payload = {'username': username, 'password': password}
+    payload = {'username': 'admin', 'password': '1qaz2wsx'}
     url = BASE_URL.rstrip('/') + API_LOGIN
     try:
         text, info = http_post_json(url, payload)
@@ -247,10 +263,6 @@ def do_login():
             pass
     except Exception as e:
         xbmcgui.Dialog().notification('Login failed', str(e), xbmcgui.NOTIFICATION_ERROR)
-
-
-
-
 
 def list_episodes(item_json):
     try:
