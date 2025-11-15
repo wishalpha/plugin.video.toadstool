@@ -32,10 +32,6 @@ API_LOGIN = '/api/login'
 COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://storage/cookies.txt')
 HTTP_TIMEOUT = 20
 
-
-CATEGORIES = ["Movies", "TVshows","Comics","Entertainment","Search" ]
-engines =['wujinvod','pianku','feifan','taopian','shandian','liangzi','tiankong','guangsu','wolong']
-
 def get_user_input():  
     kb = xbmc.Keyboard('', 'Please enter the video title')
     kb.doModal() # Onscreen keyboard appears
