@@ -22,7 +22,7 @@ _handle = int(sys.argv[1])
 ADDON = xbmcaddon.Addon()
 ADDON_ID = ADDON.getAddonInfo('id')
 
-BASE_URL = ADDON.getSetting('base_url') or 'http://120.0.0.1:3300'
+BASE_URL = ADDON.getSetting('base_url') or 'http://127.0.0.1:3300'
 API_SEARCH = '/api/search'
 API_LOGIN = '/api/login'
 
@@ -184,14 +184,14 @@ def add_dir(params, list_label, info=None, art=None, is_folder=True):
     xbmcplugin.addDirectoryItem(_handle, url, li, isFolder=is_folder)
 
 
-def do_search(query):
+def do_search():
 
-    if not query:
-        kb = xbmc.Keyboard('', 'Search videos')
-        kb.doModal()
-        if not kb.isConfirmed():
-            return
-        query = kb.getText()
+
+    kb = xbmc.Keyboard('', 'Search videos')
+    kb.doModal()
+    if not kb.isConfirmed():
+        return
+    query = kb.getText()
     
     
     q = urllib.quote(query.encode('utf-8'))
@@ -250,6 +250,7 @@ def do_login():
     
     payload = {'username': 'admin', 'password': '1qaz2wsx'}
     url = BASE_URL.rstrip('/') + API_LOGIN
+    print(url)
     try:
         text, info = http_post_json(url, payload)
         # If response includes Set-Cookie, cookiejar already saved by http_post_json
