@@ -179,6 +179,14 @@ def add_dir(params, list_label, info=None, art=None, is_folder=True):
             pass
     xbmcplugin.addDirectoryItem(_handle, url, li, isFolder=is_folder)
 
+def ensure_unicode(s):
+    if isinstance(s, unicode):
+        return s
+    try:
+        return s.decode('utf-8')
+    except:
+        return s.decode('latin1')
+
 
 def do_search():
 
@@ -189,8 +197,8 @@ def do_search():
         return
     query = kb.getText()
     
-    
-    q = urllib.urlencode({'q': query.encode('utf-8')})
+    query_u = ensure_unicode(query)
+    q = urllib.urlencode({'q': query_u.encode('utf-8')})
     url = BASE_URL.rstrip('/') + API_SEARCH + '?' + q
     try:
         text, headers = http_get(url)
