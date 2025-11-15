@@ -29,7 +29,7 @@ API_LOGIN = '/api/login'
 
 
 # Cookie file path (Netscape format)
-COOKIE_PATH = ADDON.getSetting('cookie_path') or xbmc.translatePath('special://storage/cookies.txt')
+COOKIE_PATH = xbmc.translatePath('special://profile/addon_data/plugin.video.lunaTV/cookies.txt')
 HTTP_TIMEOUT = 20
 
 def get_user_input():  
