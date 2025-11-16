@@ -301,7 +301,8 @@ def list_episodes(item_json):
                 li.setArt({'thumb': poster, 'icon': poster, 'fanart': poster})
             except Exception:
                 pass
-        u = sys.argv[0] + '?' + urllib.urlencode(params)
+        u = "%s?action=play&url=%s" % (_url, url)
+        xbmc.log("LunaTV ► Episode URL: %s" % url, xbmc.LOGINFO)
         xbmcplugin.addDirectoryItem(_handle, u, li, isFolder=False)
     
     
@@ -318,15 +319,15 @@ def clear_cookies():
 
 def play_video(path):
     try:
-        play_item = xbmcgui.ListItem(path=path)
+        xbmc.log("LunaTV ► Playing URL: %s" % url, xbmc.LOGINFO)
+
+        play_item = xbmcgui.ListItem(path=url)
+        play_item.setProperty('IsPlayable', 'true')
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
+
     except Exception as e:
-        log('Play failed: %s' % str(e), xbmc.LOGERROR)
+        xbmc.log("LunaTV ► Play failed: %s" % str(e), xbmc.LOGERROR)
         xbmcgui.Dialog().notification('Play failed', str(e), xbmcgui.NOTIFICATION_ERROR)
-    #video_url = path.split('@')[-1].split('dav/')
-    #url = 'http://'+video_url[0]+video_url[1] 
-    #xbmc.log('playing :'+to_text(url),xbmc.LOGERROR) 
-    #xbmc.Player().play(path)
 
 
 def router(paramstring):
