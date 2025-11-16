@@ -191,22 +191,19 @@ MAX_HISTORY = 20
 
 def load_history():
     if os.path.exists(HISTORY_FILE):
-        # io.open supports encoding on both Python 2 and 3
-        with io.open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return [line.strip() for line in f]
+        with open(HISTORY_FILE, "r") as f:
+            return [line.decode("utf-8").strip() for line in f.readlines()]
     return []
 
 def save_history(history):
     folder = os.path.dirname(HISTORY_FILE)
     if not os.path.exists(folder):
         os.makedirs(folder)
+    with open(HISTORY_FILE, "w") as f:
+        data = u"\n".join(history[:MAX_HISTORY])
+        f.write(data.encode("utf-8"))
 
-    # io.open works for both Python 2 & 3
-    with io.open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        # Ensure Unicode when running under Python 2
-        text = u"\n".join(history[:MAX_HISTORY])
-        f.write(text)
-        
+
 def get_search_query():
     history = load_history()
     menu = ["➕ New search..."]
@@ -231,7 +228,13 @@ def get_search_query():
     else:
         # selected old history item
         query = history[choice]
-
+    try:
+        unicode  # Python 2: exists
+        if isinstance(query, bytes):
+            query = query.decode("utf-8", "ignore")
+    except NameError:
+        # Python 3: nothing to do
+        pass
     # update history
     if query:
         # put new query always at top
