@@ -187,15 +187,70 @@ def ensure_unicode(s):
     except:
         return s.decode('latin1')
 
+HISTORY_FILE = xbmc.translatePath("special://profile/addon_data/%s/search_history.txt" % ADDON_ID)
+
+MAX_HISTORY = 20
+def load_history():
+    if not xbmcvfs.exists(HISTORY_FILE):
+        return []
+    try:
+        f = xbmcvfs.File(HISTORY_FILE)
+        data = f.read().decode("utf-8").splitlines()
+        f.close()
+        return data
+    except:
+        return []
+def save_history(history):
+    # limit to 20
+    history = history[:MAX_HISTORY]
+    try:
+        if not xbmcvfs.exists(os.path.dirname(HISTORY_FILE)):
+            xbmcvfs.mkdir(os.path.dirname(HISTORY_FILE))
+
+        f = xbmcvfs.File(HISTORY_FILE, 'w')
+        f.write("\n".join([h.encode("utf-8") for h in history]))
+        f.close()
+    except:
+        xbmc.log("LunaTV: Failed to save search history", xbmc.LOGERROR)
+def get_search_query():
+    history = load_history()
+    menu = ["➕ New search..."]
+    if history:
+        # show previous searches
+        for h in history:
+            menu.append("🔍 " + h)
+
+    choice = xbmcgui.Dialog().select("Search History", menu)
+
+    # user cancelled
+    if choice < 0:
+        return None
+
+    # chose "new search"
+    if choice == 0:
+        kb = xbmc.Keyboard('', 'Keywords')
+        kb.doModal()
+        if not kb.isConfirmed():
+            return None
+        query = kb.getText()
+    else:
+        # selected old history item
+        query = history[choice]
+
+    # update history
+    if query:
+        # put new query always at top
+        if query in history:
+            history.remove(query)
+        history.insert(0, query)
+
+        save_history(history)
+
+    return query
 
 def do_search():
 
-
-    kb = xbmc.Keyboard('', 'Search videos')
-    kb.doModal()
-    if not kb.isConfirmed():
-        return
-    query = kb.getText()
+    query = get_search_query()
     
     query_u = ensure_unicode(query)
     q = urllib.urlencode({'q': query_u.encode('utf-8')})
@@ -302,7 +357,8 @@ def list_episodes(item_json):
             except Exception:
                 pass
         u = "%s?action=play&url=%s" % (_url, url)
-        xbmc.log("LunaTV ► Episode URL: %s" % url, xbmc.LOGINFO)
+        msg = "Episode {} URL: {}".format(idx+1, url)
+        xbmc.log(msg.encode('utf-8'), xbmc.LOGINFO)
         xbmcplugin.addDirectoryItem(_handle, u, li, isFolder=False)
     
     
@@ -319,14 +375,18 @@ def clear_cookies():
 
 def play_video(path):
     try:
-        xbmc.log("LunaTV ► Playing URL: %s" % url, xbmc.LOGINFO)
+        # Safe UTF-8 logging
+        log_msg = "LunaTV: Playing URL: {}".format(path)
+        xbmc.log(log_msg.encode("utf-8"), xbmc.LOGINFO)
 
-        play_item = xbmcgui.ListItem(path=url)
+        play_item = xbmcgui.ListItem(path=path)
         play_item.setProperty('IsPlayable', 'true')
+
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
     except Exception as e:
-        xbmc.log("LunaTV ► Play failed: %s" % str(e), xbmc.LOGERROR)
+        err = "LunaTV: Play failed: {}".format(e)
+        xbmc.log(err.encode("utf-8"), xbmc.LOGERROR)
         xbmcgui.Dialog().notification('Play failed', str(e), xbmcgui.NOTIFICATION_ERROR)
 
 
