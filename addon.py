@@ -133,6 +133,11 @@ def play_video(path):
         xbmc.log(f"LunaTV: Playing URL: {path}", xbmc.LOGINFO)
         play_item = xbmcgui.ListItem(path=path)
         play_item.setProperty('IsPlayable', 'true')
+        # This tells Kodi to use InputStream Adaptive
+        play_item.setProperty('inputstream', 'inputstream.adaptive')
+        
+        # Specify the type of manifest (HLS or DASH)
+        play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')  # or 'mpd' for DASH
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
     except Exception as e:
         xbmc.log(f"LunaTV: Play failed: {e}", xbmc.LOGERROR)
