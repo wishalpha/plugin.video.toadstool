@@ -370,6 +370,12 @@ def play_video(path):
 
         play_item = xbmcgui.ListItem(path=path)
         play_item.setProperty('IsPlayable', 'true')
+        
+        # This tells Kodi to use InputStream Adaptive
+        play_item.setProperty('inputstream', 'inputstream.adaptive')
+        
+        # Specify the type of manifest (HLS or DASH)
+        play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')  # or 'mpd' for DASH
 
         xbmcplugin.setResolvedUrl(_handle, True, listitem=play_item)
 
