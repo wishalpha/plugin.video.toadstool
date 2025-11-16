@@ -193,7 +193,12 @@ def load_history():
     if os.path.exists(HISTORY_FILE):
         with open(HISTORY_FILE, "r") as f:
             return [line.decode("utf-8").strip() for line in f.readlines()]
-    return []
+
+    else:
+        DEFAULT_HISTORY = [u"海底小纵队", u"小猪佩奇"]
+        save_listory(DEFAULT_HISTORY)
+        return list(DEFAULT_HISTORY)
+    
 
 def save_history(history):
     folder = os.path.dirname(HISTORY_FILE)
