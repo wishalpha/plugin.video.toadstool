@@ -186,32 +186,21 @@ def ensure_unicode(s):
         return s.decode('utf-8')
     except:
         return s.decode('latin1')
-
-HISTORY_FILE = xbmc.translatePath("special://profile/addon_data/%s/search_history.txt" % ADDON_ID)
-
+HISTORY_FILE = xbmc.translatePath("special://profile/addon_data/plugin.video.lunaTV/search_history.txt")
 MAX_HISTORY = 20
 def load_history():
-    if not xbmcvfs.exists(HISTORY_FILE):
-        return []
-    try:
-        f = xbmcvfs.File(HISTORY_FILE)
-        data = f.read().decode("utf-8").splitlines()
-        f.close()
-        return data
-    except:
-        return []
-def save_history(history):
-    # limit to 20
-    history = history[:MAX_HISTORY]
-    try:
-        if not xbmcvfs.exists(os.path.dirname(HISTORY_FILE)):
-            xbmcvfs.mkdir(os.path.dirname(HISTORY_FILE))
+    if os.path.exists(HISTORY_FILE):
+        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return [line.strip() for line in f.readlines()]
+    return []
 
-        f = xbmcvfs.File(HISTORY_FILE, 'w')
-        f.write("\n".join([h.encode("utf-8") for h in history]))
-        f.close()
-    except:
-        xbmc.log("LunaTV: Failed to save search history", xbmc.LOGERROR)
+def save_history(history):
+    folder = os.path.dirname(HISTORY_FILE)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        f.write("\n".join(history[:MAX_HISTORY]))
+        
 def get_search_query():
     history = load_history()
     menu = ["➕ New search..."]
