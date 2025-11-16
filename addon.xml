@@ -1,19 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.lunaTV" version="1.0.1" name="LunaTV (Leia)" provider-name="alpha">
-<requires>
-<import addon="xbmc.python" version="2.1.0" />
-</requires>
-<extension point="xbmc.python.pluginsource" library="addon.py">
-<provides>video</provides>
-</extension>
-<extension point="xbmc.addon.metadata">
-<summary>Search DYTT-like API and play episodes (Kodi 18)</summary>
-<description>Search API, login to store cookies, list results, episodes, and play streams.</description>
-<platform>all</platform>
-  <assets>
-    <icon>icon.png</icon>
-    <fanart>fanart.jpg</fanart>
-  </assets>
-  <news>First release</news>
-</extension>
+<addon id="plugin.video.lunaTV" version="1.0.3" name="LunaTV (Omega)" provider-name="alpha">
+  <requires>
+    <!-- Python 3 for Kodi 20+ -->
+    <import addon="xbmc.python" version="3.0.0" />
+  </requires>
+
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+
+  <extension point="xbmc.addon.metadata">
+    <summary>Search DYTT-like API and play episodes (Kodi 20+)</summary>
+    <description>
+      Search API, login to store cookies, list results, episodes, and play streams.
+      Compatible with Kodi 20+ (Omega/Nexus), Python 3.
+    </description>
+    <platform>all</platform>
+    <assets>
+      <icon resolution="128">icon.png</icon>
+      <fanart resolution="1920x1080">fanart.jpg</fanart>
+    </assets>
+    <news>Updated for Kodi 20+ (Python 3) with modern addon structure</news>
+  </extension>
 </addon>
