@@ -1,5 +1,5 @@
 # coding: utf-8
-import sys,os,json,traceback,urllib,cookielib, urllib2
+import sys,os,json,traceback,urllib,cookielib, urllib2,io
 
 try:
     from urllib import urlencode
@@ -188,18 +188,24 @@ def ensure_unicode(s):
         return s.decode('latin1')
 HISTORY_FILE = xbmc.translatePath("special://profile/addon_data/plugin.video.lunaTV/search_history.txt")
 MAX_HISTORY = 20
+
 def load_history():
     if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return [line.strip() for line in f.readlines()]
+        # io.open supports encoding on both Python 2 and 3
+        with io.open(HISTORY_FILE, "r", encoding="utf-8") as f:
+            return [line.strip() for line in f]
     return []
 
 def save_history(history):
     folder = os.path.dirname(HISTORY_FILE)
     if not os.path.exists(folder):
         os.makedirs(folder)
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        f.write("\n".join(history[:MAX_HISTORY]))
+
+    # io.open works for both Python 2 & 3
+    with io.open(HISTORY_FILE, "w", encoding="utf-8") as f:
+        # Ensure Unicode when running under Python 2
+        text = u"\n".join(history[:MAX_HISTORY])
+        f.write(text)
         
 def get_search_query():
     history = load_history()
