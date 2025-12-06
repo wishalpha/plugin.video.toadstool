@@ -233,7 +233,7 @@ def get_search_query():
         query = kb.getText()
     else:
         # selected old history item
-        query = history[choice]
+        query = history[choice-1]
     try:
         unicode  # Python 2: exists
         if isinstance(query, bytes):
@@ -281,10 +281,18 @@ def do_search():
     for item in results:
         title = item.get('title') or 'Untitled'
         year = item.get('year') or ''
-        label = '%s (%s)' % (title, year) if year else title
+        source = item.get('source_name') or ''
+        if year and source:
+            label = "%s (%s)-(%s)" % (title, year, source)
+        elif year:
+            label = "%s (%s)" % (title, source)
+        elif source:
+            label = "%s (%s)" % (title, year)
+        else:
+            label = title
         poster = item.get('poster')
         plot = item.get('desc') or ''
-        source = item.get('source_name') or ''
+        
         info = {'title': title+'('+source+')' , 'plot': plot, 'genre': item.get('class') or '', 'year': year}
         params = {'action': 'list_episodes', 'item_json': urllib.quote(json.dumps(item))}
         art = {}
