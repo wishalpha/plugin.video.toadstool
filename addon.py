@@ -28,7 +28,7 @@ API_LOGIN = '/api/login'
 
 
 # Cookie file path (Netscape format)
-COOKIE_PATH = xbmc.translatePath('special://profile/addon_data/plugin.video.lunaTV/cookies.txt')
+COOKIE_PATH = xbmcvfs.translatePath('special://profile/addon_data/plugin.video.lunaTV/cookies.txt')
 HTTP_TIMEOUT = 20
 
 def get_user_input():  
@@ -185,7 +185,7 @@ def ensure_unicode(s):
         return s.decode('utf-8')
     except:
         return s.decode('latin1')
-HISTORY_FILE = xbmc.translatePath("special://profile/addon_data/plugin.video.lunaTV/search_history.txt")
+HISTORY_FILE = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.lunaTV/search_history.txt")
 MAX_HISTORY = 20
 
 def load_history():
