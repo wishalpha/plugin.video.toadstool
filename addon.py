@@ -225,7 +225,7 @@ def save_history(history):
 
 def get_search_query():
     history = load_history()
-    xbmc.log("Loaded history: %s" % [h.encode("utf-8") for h in history], level=xbmc.LOGNOTICE)
+    xbmc.log("Loaded history: %s" % [h.encode("utf-8") for h in history], level=xbmc.LOGINFO)
     menu = ["New search..."]
     if history:
         # show previous searches
