@@ -65,7 +65,7 @@ def get_home():
 
 
 # --------------------- logging ---------------------
-def log(msg, level=xbmc.LOGNOTICE):
+def log(msg, level=xbmc.LOGINFO):
     xbmc.log('[%s] %s' % (ADDON_ID, msg), level)
 
 # --------------------- cookie helpers ---------------------
