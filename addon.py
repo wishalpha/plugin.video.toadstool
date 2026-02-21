@@ -1,12 +1,11 @@
 # coding: utf-8
-import sys,os,json,traceback,urllib,cookielib, urllib2,io
+import sys, os, json, traceback, io
+import urllib.request as urllib2
+import urllib.parse as urllib
+import http.cookiejar as cookielib
 
-try:
-    from urllib import urlencode
-    from urllib import quote,unquote
-    from urlparse import parse_qsl
-except ImportError:
-    from urllib.parse import urlencode,quote,parse_qsl,unquote
+# These are now all located in urllib.parse
+from urllib.parse import urlencode, quote, unquote, parse_qsl
 
 import xbmcgui
 import xbmcplugin
