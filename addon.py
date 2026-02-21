@@ -195,23 +195,32 @@ HISTORY_FILE = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.
 MAX_HISTORY = 20
 
 def load_history():
-    if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE, "r") as f:
-            return [line.decode("utf-8").strip() for line in f.readlines()]
-
-    else:
-        DEFAULT_HISTORY = [u"海底小纵队", u"小猪佩奇"]
-        save_listory(DEFAULT_HISTORY)
-        return list(DEFAULT_HISTORY)
+    # Use translated path for Kodi compatibility
+    path = xbmcvfs.translatePath(HISTORY_FILE)
     
+    if os.path.exists(path):
+        # Open in text mode with explicit encoding
+        with open(path, "r", encoding="utf-8") as f:
+            # No need to .decode() here; f.readlines() returns strings
+            return [line.strip() for line in f.readlines()]
+    else:
+        # Python 3 strings are already unicode, 'u' prefix is optional
+        DEFAULT_HISTORY = ["海底小纵队", "小猪佩奇"]
+        save_history(DEFAULT_HISTORY)
+        return list(DEFAULT_HISTORY)
 
 def save_history(history):
-    folder = os.path.dirname(HISTORY_FILE)
+    path = xbmcvfs.translatePath(HISTORY_FILE)
+    folder = os.path.dirname(path)
+    
     if not os.path.exists(folder):
         os.makedirs(folder)
-    with open(HISTORY_FILE, "w") as f:
-        data = u"\n".join(history[:MAX_HISTORY])
-        f.write(data.encode("utf-8"))
+        
+    # Open in text mode with explicit encoding
+    with open(path, "w", encoding="utf-8") as f:
+        data = "\n".join(history[:MAX_HISTORY])
+        # Write the string directly; do NOT .encode() it
+        f.write(data)
 
 
 def get_search_query():
