@@ -185,12 +185,17 @@ def add_dir(params, list_label, info=None, art=None, is_folder=True):
     xbmcplugin.addDirectoryItem(_handle, url, li, isFolder=is_folder)
 
 def ensure_unicode(s):
-    if isinstance(s, unicode):
+    # In Python 3, 'str' is the equivalent of the old 'unicode'
+    if isinstance(s, str):
         return s
     try:
+        # If it's bytes, decode it
         return s.decode('utf-8')
     except:
-        return s.decode('latin1')
+        try:
+            return s.decode('latin1')
+        except:
+            return str(s) # Last resort: convert to string
 HISTORY_FILE = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.lunaTV/search_history.txt")
 MAX_HISTORY = 20
 
@@ -271,7 +276,7 @@ def do_search():
     query = get_search_query()
     
     query_u = ensure_unicode(query)
-    q = urllib.urlencode({'q': query_u.encode('utf-8')})
+    q = urllib.urlencode({'q': query_u})
     url = BASE_URL.rstrip('/') + API_SEARCH + '?' + q
     try:
         text, headers = http_get(url)
