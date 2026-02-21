@@ -81,26 +81,32 @@ def ensure_cookie_dir(path):
 
 
 
-
 def load_cookie_jar(path):
     ensure_cookie_dir(path)
+    # Ensure path is a real OS path
+    translated_path = xbmcvfs.translatePath(path)
+    
     jar = cookielib.LWPCookieJar()
     try:
-        if os.path.exists(path):
-            jar.load(path, ignore_discard=True, ignore_expires=True)
-            log('Loaded cookies from %s' % path)
+        # Use xbmcvfs.exists for better compatibility in Kodi
+        if xbmcvfs.exists(translated_path):
+            # Check if file is not empty to avoid Python 3 LoadError
+            if os.path.getsize(translated_path) > 0:
+                jar.load(translated_path, ignore_discard=True, ignore_expires=True)
+                log('Loaded cookies from %s' % translated_path)
+            else:
+                log('Cookie file empty, skipping load', xbmc.LOGINFO)
     except Exception as e:
         log('Failed loading cookies: %s' % str(e), xbmc.LOGWARNING)
     return jar
 
-
 def save_cookie_jar(jar, path):
     try:
-        jar.save(path, ignore_discard=True, ignore_expires=True)
-        log('Saved cookies to %s' % path)
+        translated_path = xbmcvfs.translatePath(path)
+        jar.save(translated_path, ignore_discard=True, ignore_expires=True)
+        log('Saved cookies to %s' % translated_path)
     except Exception as e:
         log('Failed saving cookies: %s' % str(e), xbmc.LOGERROR)
-
 
 # --------------------- HTTP helpers ---------------------
 
@@ -138,7 +144,7 @@ def http_get(url):
 def http_post_json(url, payload):
     opener, jar = build_opener()
 
-    data = json.dumps(payload)
+    data = json.dumps(payload).encode('utf-8')
     headers = {
         'Content-Type': 'application/json',
         'Content-Length': str(len(data)),
