@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<settings>
-    <category label="Server">
-        <setting 
-            id="server_url"
-            type="text"
-            label="Server URL"
-            default="http://127.0.0.1:3300"
-            enable="true">
-            <description>Enter the base URL of your LunaTV server (e.g., http://127.0.0.1:3300)</description>
-        </setting>
-    </category>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings version="1">
+    <section id="plugin.video.lunaTV">
+        <category id="server" label="Server Settings">
+            <group id="1">
+                <setting id="server_url" type="string" label="Server URL" help="Enter the base URL of your LunaTV server">
+                    <level>0</level>
+                    <default>http://192.168.1.1:3300</default>
+                    <control type="edit" format="string">
+                        <heading>Server URL</heading>
+                    </control>
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>
